@@ -1,0 +1,350 @@
+;------------------------------------------------
+; General line plot routine
+;
+;  L001B = dx
+;  L00A0 = dy
+;
+;  L0031 = X1
+;  L0032 = Y1
+;  L0033 = X2
+;  L0034 = Y2
+;
+;  L00A1 = Pixel data
+;  L00B1 = Plot direction
+;------------------------------------------------
+
+L1621:      sty L00A4              ; ??
+
+            lda #$80               ; Set vars
+            sta L00A2
+            sta L0007
+
+            asl A                  ; Plot direction=0
+            sta L00B1
+
+            lda L0033              ; Calculate dx
+            sbc L0031
+            bcs L1636              ; If x2<x1, invert dx
+
+            eor #$FF               ; Negative
+            adc #$01
+L1636:      sta L001B              ; Store dx
+
+            sec                    ; Calculate dy
+            lda L0034
+            sbc L0032
+            bcs L1643              ; If y2<y1, invert dy
+
+            eor #$FF               ; Negative
+            adc #$01
+L1643:      sta L00A0              ; Store dy
+
+            cmp L001B              ; Check if dx<dy
+            bcc L164C              ; Plot line dx>dy
+            jmp L1722              ; Plot line dx<=dy
+
+;--------------------------------------------
+; Plot line dx>dy (Horizontal)
+;--------------------------------------------
+
+L164C:      ldx L0031              ; Check if x1<x2
+            cpx L0033
+            bcc L1663              ; Jump if x1<x2
+
+            dec L00B1              ; Plot direction=-1
+
+            lda L0033              ; Switch x1<>x2, y1<>y2
+            sta L0031
+            stx L0033
+            tax
+            lda L0034
+            ldy L0032
+            sta L0032
+            sty L0034
+
+L1663:      lda L0032              ; Convert x,y -> screenaddress
+            lsr A
+            lsr A
+            lsr A
+            sta L0008
+            lsr A
+            ror L0007
+            lsr A
+            ror L0007
+            adc L0008
+            adc #$58               ; Add hb-screenaddress
+            sta L0008
+            txa
+            and #$F8
+            adc L0007
+            sta L0007
+            bcc L1681
+            inc L0008
+
+L1681:      lda L0032              ; Get line ptr
+            and #$07
+            tay
+
+            txa                    ; Get pixel ptr
+            and #$07
+            tax
+
+            lda L160B,X            ; Get pixelmask
+            sta L00A1              ; Pixeldata
+
+            lda L00A0              ; A5 A0
+            ldx #$FE               ; A2 FE
+            stx L00A0              ; 86 A0
+L1695:      asl A                  ; 0A
+            bcs L169C              ; B0 04
+            cmp L001B              ; C5 1B
+            bcc L169F              ; 90 03
+L169C:      sbc L001B              ; E5 1B
+            sec                    ; 38
+L169F:      rol L00A0              ; 26 A0
+            bcs L1695              ; B0 F2
+            ldx L001B              ; A6 1B
+            inx                    ; E8
+
+            lda L0034              ; Get y2
+            sbc L0032              ; Check if y2>y1
+            bcs L16E6              ; If y2>y1 jump
+
+            lda L00B1              ; Get plot direction
+            bne L16B7              ; If <>0 jump
+            dex
+
+L16B1:      lda L00A1              ; Get pixel mask
+            eor (L0007),Y          ; Plot pixel on screen
+            sta (L0007),Y
+
+L16B7:      lsr L00A1              ; Shift pixelmask
+            bcc L16C7              ; Check overflow
+            ror L00A1              ; Reset pixel mask
+
+            lda L0007              ; Select 1 byte to the right
+            adc #$08
+            sta L0007
+            bcc L16C7
+            inc L0008
+
+L16C7:      lda L00A2              ; ??
+            adc L00A0
+            sta L00A2
+            bcc L16E0
+
+            dey                    ; Select 1 line up
+            bpl L16E0              ; If no top line cross, skip
+
+            lda L0007              ; Top line cross
+            sbc #$40
+            sta L0007
+            lda L0008
+            sbc #$01
+            sta L0008
+            ldy #$07
+
+L16E0:      dex                    ; Next pixel
+            bne L16B1              ; If not last pixel repeat
+
+            ldy L00A4              ; ??
+            rts
+
+;----------------------------------------------
+
+L16E6:      lda L00B1              ; Get plot direction
+            beq L16F1 
+            dex
+
+L16EB:      lda L00A1              ; Get pixel mask
+            eor (L0007),Y          ; Plot pixel on screen
+            sta (L0007),Y
+
+L16F1:      lsr L00A1              ; Shift pixelmask
+            bcc L1701              ; Check overflow
+            ror L00A1              ; Reset pixel mask
+
+            lda L0007              ; Select 1 byte to the right
+            adc #$08
+            sta L0007
+            bcc L1701
+            inc L0008
+
+L1701:      lda L00A2              ; ??
+            adc L00A0
+            sta L00A2
+            bcc L171C
+
+            iny                    ; Select 1 line below
+            cpy #$08               ; Check bottom line cross
+            bne L171C              ; If not, skip
+
+            lda L0007              ; Bottom border cross
+            adc #$3F
+            sta L0007
+            lda L0008
+            adc #$01
+            sta L0008
+            ldy #$00
+
+L171C:      dex                    ; Next pixel
+            bne L16EB              ; If not last pixel repeat
+
+            ldy L00A4              ; ??
+            rts
+
+;--------------------------------------------
+; Plot line dx<dy vertical
+;--------------------------------------------
+
+L1722:      ldy L0032              ; Check if y1>y2
+            tya
+            ldx L0031
+            cpy L0034
+            bcs L173B              ; Jump if y1>y2
+
+            dec L00B1              ; Plot direction=-1
+
+            lda L0033              ; Switch x1<>x2, y1<>y2
+            sta L0031
+            stx L0033
+            tax
+            lda L0034
+            sta L0032
+            sty L0034
+            tay
+
+L173B:      lsr A                  ; Convert x,y -> screenaddress
+            lsr A
+            lsr A
+            sta L0008
+            lsr A
+            ror L0007
+            lsr A
+            ror L0007
+            adc L0008
+            adc #$58               ; Add hb-screenaddress
+            sta L0008
+            txa
+            and #$F8
+            adc L0007
+            sta L0007
+            bcc L1757
+            inc L0008
+
+L1757:      lda L0032              ; Get line ptr
+            and #$07
+            tay
+
+            txa                    ; Get pixel ptr
+            and #$07
+            tax
+
+            lda L160B,X            ; Get pixelmask
+            sta L00A1              ; Pixeldata
+
+            lda L001B              ; A5 1B
+            ldx #$01               ; A2 01
+            stx L001B              ; 86 1B
+L176B:      asl A                  ; 0A
+            bcs L1772              ; B0 04
+            cmp L00A0              ; C5 A0
+            bcc L1775              ; 90 03
+L1772:      sbc L00A0              ; E5 A0
+            sec                    ; 38
+L1775:      rol L001B              ; 26 1B
+            bcc L176B              ; 90 F2
+            ldx L00A0              ; A6 A0
+            inx                    ; E8
+
+            lda L0033              ; Get x2
+            sbc L0031              ; Check if x2<x1
+            bcc L17BE              ; If x2<x1 jump
+
+            clc
+            lda L00B1              ; Get plot direction
+            beq L178E              ; If =0 jump
+
+            dex                    ; Next pixel
+
+L1788:      lda L00A1              ; Get pixel mask
+            eor (L0007),Y          ; Plot pixel on screen
+            sta (L0007),Y
+
+L178E:      dey                    ; Select 1 line up
+            bpl L179F              ; If no top line cross, skip
+
+            lda L0007              ; Select byte left/up
+            sbc #$3F
+            sta L0007
+            lda L0008
+            sbc #$01
+            sta L0008
+            ldy #$07
+
+L179F:      lda L00A2              ; ??
+            adc L001B              ; 65 1B
+            sta L00A2              ; 85 A2
+            bcc L17B8              ; 90 11
+
+            lsr L00A1              ; Shift pixelmask
+            bcc L17B8              ; Check overflow
+            ror L00A1              ; Reset pixel mask
+ 
+            lda L0007              ; Select 1 byte to the right
+            adc #$08
+            sta L0007
+            bcc L17B8
+            inc L0008
+            clc
+
+L17B8:      dex                    ; Next pixel
+            bne L1788              ; If not last pixel, repeat
+
+            ldy L00A4              ; ??
+            rts
+
+;--------------------------------------------
+
+L17BE:      lda L00B1              ; Get plot direction
+            beq L17C9              ; if =0, jump
+
+            dex                    ; Next pixel
+
+L17C3:      lda L00A1              ; Get pixelmask
+            eor (L0007),Y          ; Plot pixel on screen
+            sta (L0007),Y
+
+L17C9:      dey                    ; Select 1 line up
+            bpl L17DA              ; If no top line cross, skip
+
+            lda L0007              ; Select 1 byte left/up
+            sbc #$3F
+            sta L0007
+            lda L0008
+            sbc #$01
+            sta L0008
+            ldy #$07
+
+L17DA:      lda L00A2              ; ??
+            adc L001B
+            sta L00A2
+            bcc L17F3
+
+            asl L00A1              ; Shift pixelmask
+            bcc L17F3              ; Check overflow
+            rol L00A1              ; Reset pixelmask
+
+            lda L0007              ; Select 1 byte to the left
+            sbc #$07
+            sta L0007
+            bcs L17F2
+            dec L0008
+
+L17F2:      clc
+
+L17F3:      dex                    ; Next pixel
+            bne L17C3              ; If not last pixel, repeat
+
+            ldy L00A4              ; ??
+            rts
