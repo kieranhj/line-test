@@ -30,7 +30,6 @@ SCREEN_WIDTH=256
 
     .notsteep
 IF HAMILTONIAN_12
-    LDA ham_phase:BEQ skip_ham  ; runtime disable
     STX dx                 ; store dx to ZP for hamiltonian entry
     TXA:LSR A:CMP dy
     BCS skip_ham           ; dx/2 >= dy -> not in 1:2 band (excludes 2:1)

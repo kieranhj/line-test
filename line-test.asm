@@ -78,7 +78,6 @@ scr_addr = &6000
 .draw_fn_num        SKIP 1
 
 .do_anim            SKIP 1
-.ham_phase          SKIP 1
 
 \\ CODE
 ORG &3000
@@ -117,7 +116,6 @@ INCLUDE "tricky-linedraw.asm"
     STA debounce
     STA do_anim
     STA debug_rasters
-    LDA #1:STA ham_phase
 
     LDA #NUM_LINES
     JSR set_num_lines
