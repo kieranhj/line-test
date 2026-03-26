@@ -9,6 +9,7 @@
 MIN_LINES = 3
 MAX_LINES = 64
 NUM_LINES = 4
+HAMILTONIAN_12 = TRUE
 
 PAL_black = 0 EOR 7
 PAL_red = 1 EOR 7
@@ -51,7 +52,6 @@ err = accum
 errs = temp
 .scrstrt            SKIP 1
 .ls                 SKIP 1
-
 \\ Tricky ZP vars
 scr_addr = &6000
 
@@ -78,6 +78,7 @@ scr_addr = &6000
 .draw_fn_num        SKIP 1
 
 .do_anim            SKIP 1
+.ham_phase          SKIP 1
 
 \\ CODE
 ORG &3000
@@ -87,6 +88,9 @@ GUARD &5800
 
 INCLUDE "rtw-linedraw.asm"
 INCLUDE "nj-linedraw4.asm"
+IF HAMILTONIAN_12
+INCLUDE "shallow_12_hamiltonian.asm"
+ENDIF
 INCLUDE "tricky-linedraw.asm"
 
 .set_num_lines
@@ -113,6 +117,7 @@ INCLUDE "tricky-linedraw.asm"
     STA debounce
     STA do_anim
     STA debug_rasters
+    LDA #1:STA ham_phase
 
     LDA #NUM_LINES
     JSR set_num_lines

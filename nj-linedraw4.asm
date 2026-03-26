@@ -29,6 +29,14 @@ SCREEN_WIDTH=256
     CPX dy:BCS notsteep:JMP steep
 
     .notsteep
+IF HAMILTONIAN_12
+    LDA ham_phase:BEQ skip_ham  ; runtime disable
+    STX dx                 ; store dx to ZP for hamiltonian entry
+    TXA:LSR A:CMP dy
+    BCS skip_ham           ; dx/2 >= dy -> not in 1:2 band (excludes 2:1)
+    JMP entry_12_nj        ; hamiltonian path (do_dispatch PLPs direction)
+    .skip_ham
+ENDIF
     LDA dy:BEQ horizontal:STA cnt
     TXA:LSR A:STA err:STA errs
     LDA #2:STA ls
