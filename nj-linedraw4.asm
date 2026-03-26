@@ -5,6 +5,7 @@
 ;----------------------------------------------------------------------------------------------------------
 
 SCREEN_WIDTH=256
+KCHACK=(SCREEN_WIDTH=256)
 
 
 .linedraw4
@@ -17,11 +18,15 @@ SCREEN_WIDTH=256
     LDA x0:SBC x1:PHP:BCS dxok
     SBC #0:EOR #&FF
     .dxok TAX
-;    LDA #&80:STA scr
-    LDA #&00:STA scr            \\ KCHACK
+IF KCHACK
+    LDA #&00:STA scr
     LDA y0:LSR A:LSR A:LSR A:STA scr+1
-;    LSR A:ROR scr:LSR A:ROR scr
-;    ADC scr+1:STA scr+1
+ELSE
+    LDA #&80:STA scr
+    LDA y0:LSR A:LSR A:LSR A:STA scr+1
+    LSR A:ROR scr:LSR A:ROR scr
+    ADC scr+1:STA scr+1
+ENDIF
     CLC
     LDA x0:AND #&F8:ADC scr:STA scr
     LDA scrstrt:ADC scr+1:STA scr+1
@@ -105,10 +110,14 @@ SCREEN_WIDTH=256
     .b00 SBC #dy:BCS b10:ADC #dx:STA err
     LDA #&80:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e00:.f00 DEY:BPL a10
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a10
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a10:DEC scr+1:SEC:BCS a10
+ENDIF
     .e00 DEC ls:BEQ d00:LDA err:SBC errs
     STA err:INC cnt:BCS f00
     .d00 RTS
@@ -117,10 +126,14 @@ SCREEN_WIDTH=256
     .b10 SBC #dy:BCS b20:ADC #dx:STA err
     TXA:AND #&C0:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e10:.f10 DEY:BPL a20
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a20
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a20:DEC scr+1:SEC:BCS a20
+ENDIF
     .e10 DEC ls:BEQ d10:LDA err:SBC errs
     STA err:INC cnt:BCS f10
     .d10 RTS
@@ -129,10 +142,14 @@ SCREEN_WIDTH=256
     .b20 SBC #dy:BCS b30:ADC #dx:STA err
     TXA:AND #&E0:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e20:.f20 DEY:BPL a30
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a30
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a30:DEC scr+1:SEC:BCS a30
+ENDIF
     .e20 DEC ls:BEQ d20:LDA err:SBC errs
     STA err:INC cnt:BCS f20
     .d20 RTS
@@ -141,10 +158,14 @@ SCREEN_WIDTH=256
     .b30 SBC #dy:BCS b40:ADC #dx:STA err
     TXA:AND #&F0:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e30:.f30 DEY:BPL a40
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a40
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a40:DEC scr+1:SEC:BCS a40
+ENDIF
     .e30 DEC ls:BEQ d30:LDA err:SBC errs
     STA err:INC cnt:BCS f30
     .d30 RTS
@@ -153,10 +174,14 @@ SCREEN_WIDTH=256
     .b40 SBC #dy:BCS b50:ADC #dx:STA err
     TXA:AND #&F8:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e40:.f40 DEY:BPL a50
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a50
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a50:DEC scr+1:SEC:BCS a50
+ENDIF
     .e40 DEC ls:BEQ d40:LDA err:SBC errs
     STA err:INC cnt:BCS f40
     .d40 RTS
@@ -165,10 +190,14 @@ SCREEN_WIDTH=256
     .b50 SBC #dy:BCS b60:ADC #dx:STA err
     TXA:AND #&FC:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e50:.f50 DEY:BPL a60
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a60
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a60:DEC scr+1:SEC:BCS a60
+ENDIF
     .e50 DEC ls:BEQ d50:LDA err:SBC errs
     STA err:INC cnt:BCS f50
     .d50 RTS
@@ -177,10 +206,14 @@ SCREEN_WIDTH=256
     .b60 SBC #dy:BCS b70:ADC #dx:STA err
     TXA:AND #&FE:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e60:.f60 DEY:BPL a70
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a70
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a70:DEC scr+1:SEC:BCS a70
+ENDIF
     .e60 DEC ls:BEQ d60:LDA err:SBC errs
     STA err:INC cnt:BCS f60
     .d60 RTS
@@ -189,23 +222,35 @@ SCREEN_WIDTH=256
     .b70 SBC #dy:BCS by0:ADC #dx:STA err
     TXA:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e70:.f70 DEY:BPL ad0
+IF KCHACK
+    LDA scr:ADC #7:STA scr:DEC scr+1:LDY #7:SEC:JMP a00
+ELSE
     LDA scr:SBC #LO(SCREEN_WIDTH-8):LDY #7:STA scr
     LDA scr+1:SBC #HI(SCREEN_WIDTH-8):STA scr+1:JMP a00
+ENDIF
     .e70 DEC ls:BEQ d70:LDA err:SBC errs
     STA err:INC cnt:BCS f70
     .d70 RTS:.by0 STA err
     TXA:EOR(scr),Y:STA (scr),Y
+IF KCHACK
+    .ad0 LDA scr:ADC #7:STA scr:SEC:JMP a00
+ELSE
     .ad0 LDA scr:ADC #7:STA scr:BCS ac0
     SEC:JMP a00
     .ac0 INC scr+1:JMP a00
+ENDIF
     .a01 LDA err:LDX #&FF
     .b01 SBC #dy:BCS b11:ADC #dx:STA err
     LDA #1:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e01:.f01 DEY:BPL a11
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a11
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a11:DEC scr+1:SEC:BCS a11
+ENDIF
     .e01 DEC ls:BEQ d01:LDA err:SBC errs
     STA err:INC cnt:BCS f01
     .d01 RTS
@@ -214,10 +259,14 @@ SCREEN_WIDTH=256
     .b11 SBC #dy:BCS b21:ADC #dx:STA err
     TXA:AND #3:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e11:.f11 DEY:BPL a21
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a21
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a21:DEC scr+1:SEC:BCS a21
+ENDIF
     .e11 DEC ls:BEQ d11:LDA err:SBC errs
     STA err:INC cnt:BCS f11
     .d11 RTS
@@ -226,10 +275,14 @@ SCREEN_WIDTH=256
     .b21 SBC #dy:BCS b31:ADC #dx:STA err
     TXA:AND #7:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e21:.f21 DEY:BPL a31
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a31
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a31:DEC scr+1:SEC:BCS a31
+ENDIF
     .e21 DEC ls:BEQ d21:LDA err:SBC errs
     STA err:INC cnt:BCS f21
     .d21 RTS
@@ -238,10 +291,14 @@ SCREEN_WIDTH=256
     .b31 SBC #dy:BCS b41:ADC #dx:STA err
     TXA:AND #&F:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e31:.f31 DEY:BPL a41
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a41
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a41:DEC scr+1:SEC:BCS a41
+ENDIF
     .e31 DEC ls:BEQ d31:LDA err:SBC errs
     STA err:INC cnt:BCS f31
     .d31 RTS
@@ -250,10 +307,14 @@ SCREEN_WIDTH=256
     .b41 SBC #dy:BCS b51:ADC #dx:STA err
     TXA:AND #&1F:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e41:.f41 DEY:BPL a51
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a51
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a51:DEC scr+1:SEC:BCS a51
+ENDIF
     .e41 DEC ls:BEQ d41:LDA err:SBC errs
     STA err:INC cnt:BCS f41
     .d41 RTS
@@ -262,10 +323,14 @@ SCREEN_WIDTH=256
     .b51 SBC #dy:BCS b61:ADC #dx:STA err
     TXA:AND #&3F:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e51:.f51 DEY:BPL a61
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a61
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a61:DEC scr+1:SEC:BCS a61
+ENDIF
     .e51 DEC ls:BEQ d51:LDA err:SBC errs
     STA err:INC cnt:BCS f51
     .d51 RTS
@@ -274,10 +339,14 @@ SCREEN_WIDTH=256
     .b61 SBC #dy:BCS b71:ADC #dx:STA err
     TXA:AND #&7F:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e61:.f61 DEY:BPL a71
+IF KCHACK
+    DEC scr+1:LDY #7:SEC:BCS a71
+ELSE
     LDA scr
 	SBC #LO(SCREEN_WIDTH)
 	STA scr:DEC scr+1
     LDY #7:BCS a71:DEC scr+1:SEC:BCS a71
+ENDIF
     .e61 DEC ls:BEQ d61:LDA err:SBC errs
     STA err:INC cnt:BCS f61
     .d61 RTS
@@ -286,21 +355,33 @@ SCREEN_WIDTH=256
     .b71 SBC #dy:BCS by1:ADC #dx:STA err
     TXA:EOR(scr),Y:STA (scr),Y
     DEC cnt:BEQ e71:.f71 DEY:BPL sb1
+IF KCHACK
+    LDA scr:SBC #8:STA scr:DEC scr+1:LDY #7:SEC:JMP a01
+ELSE
     LDA scr:SBC #LO(SCREEN_WIDTH+8):LDY #7:STA scr
     LDA scr+1:SBC #HI(SCREEN_WIDTH+8):STA scr+1:JMP a01
+ENDIF
     .e71 DEC ls:BEQ d71:LDA err:SBC errs
     STA err:INC cnt:BCS f71
     .d71 RTS:.by1 STA err
     TXA:EOR(scr),Y:STA (scr),Y
+IF KCHACK
+    .sb1 LDA scr:SBC #8:STA scr:SEC:JMP a01
+ELSE
     .sb1 LDA scr:SBC #8:STA scr:BCC sc1
     JMP a01
     .sc1 DEC scr+1:SEC:JMP a01
+ENDIF
     .p02 LDA #&80:EOR(scr),Y:STA (scr),Y
     TXA:.a02 SBC #dx:BCC b02:TAX
     DEY:BPL p02
+IF KCHACK
+    .s02 DEC scr+1:LDY #7:SEC:BCS p02
+ELSE
     .s02 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p02:DEC scr+1:SEC:BCS p02
+ENDIF
     .e02 DEC ls:BEQ d02:SBC errs
     INC cnt:BCS n02:.d02 RTS
     .b02 ADC #dy:DEC cnt:BEQ e02
@@ -308,9 +389,13 @@ SCREEN_WIDTH=256
     .p12 LDA #&40:EOR(scr),Y:STA (scr),Y
     TXA:.a12 SBC #dx:BCC b12:TAX
     DEY:BPL p12
+IF KCHACK
+    .s12 DEC scr+1:LDY #7:SEC:BCS p12
+ELSE
     .s12 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p12:DEC scr+1:SEC:BCS p12
+ENDIF
     .e12 DEC ls:BEQ d12:SBC errs
     INC cnt:BCS n12:.d12 RTS
     .b12 ADC #dy:DEC cnt:BEQ e12
@@ -318,9 +403,13 @@ SCREEN_WIDTH=256
     .p22 LDA #&20:EOR(scr),Y:STA (scr),Y
     TXA:.a22 SBC #dx:BCC b22:TAX
     DEY:BPL p22
+IF KCHACK
+    .s22 DEC scr+1:LDY #7:SEC:BCS p22
+ELSE
     .s22 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p22:DEC scr+1:SEC:BCS p22
+ENDIF
     .e22 DEC ls:BEQ d22:SBC errs
     INC cnt:BCS n22:.d22 RTS
     .b22 ADC #dy:DEC cnt:BEQ e22
@@ -328,9 +417,13 @@ SCREEN_WIDTH=256
     .p32 LDA #&10:EOR(scr),Y:STA (scr),Y
     TXA:.a32 SBC #dx:BCC b32:TAX
     DEY:BPL p32
+IF KCHACK
+    .s32 DEC scr+1:LDY #7:SEC:BCS p32
+ELSE
     .s32 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p32:DEC scr+1:SEC:BCS p32
+ENDIF
     .e32 DEC ls:BEQ d32:SBC errs
     INC cnt:BCS n32:.d32 RTS
     .b32 ADC #dy:DEC cnt:BEQ e32
@@ -338,9 +431,13 @@ SCREEN_WIDTH=256
     .p42 LDA #8:EOR(scr),Y:STA (scr),Y
     TXA:.a42 SBC #dx:BCC b42:TAX
     DEY:BPL p42
+IF KCHACK
+    .s42 DEC scr+1:LDY #7:SEC:BCS p42
+ELSE
     .s42 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p42:DEC scr+1:SEC:BCS p42
+ENDIF
     .e42 DEC ls:BEQ d42:SBC errs
     INC cnt:BCS n42:.d42 RTS
     .b42 ADC #dy:DEC cnt:BEQ e42
@@ -348,9 +445,13 @@ SCREEN_WIDTH=256
     .p52 LDA #4:EOR(scr),Y:STA (scr),Y
     TXA:.a52 SBC #dx:BCC b52:TAX
     DEY:BPL p52
+IF KCHACK
+    .s52 DEC scr+1:LDY #7:SEC:BCS p52
+ELSE
     .s52 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p52:DEC scr+1:SEC:BCS p52
+ENDIF
     .e52 DEC ls:BEQ d52:SBC errs
     INC cnt:BCS n52:.d52 RTS
     .b52 ADC #dy:DEC cnt:BEQ e52
@@ -358,9 +459,13 @@ SCREEN_WIDTH=256
     .p62 LDA #2:EOR(scr),Y:STA (scr),Y
     TXA:.a62 SBC #dx:BCC b62:TAX
     DEY:BPL p62
+IF KCHACK
+    .s62 DEC scr+1:LDY #7:SEC:BCS p62
+ELSE
     .s62 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p62:DEC scr+1:SEC:BCS p62
+ENDIF
     .e62 DEC ls:BEQ d62:SBC errs
     INC cnt:BCS n62:.d62 RTS
     .b62 ADC #dy:DEC cnt:BEQ e62
@@ -368,23 +473,39 @@ SCREEN_WIDTH=256
     .p72 LDA #1:EOR(scr),Y:STA (scr),Y
     TXA:.a72 SBC #dx:BCC b72:TAX
     DEY:BPL p72
+IF KCHACK
+    .s72 DEC scr+1:LDY #7:SEC:BCS p72
+ELSE
     .s72 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p72:DEC scr+1:SEC:BCS p72
+ENDIF
     .e72 DEC ls:BEQ d72:SBC errs
     INC cnt:BCS n72:.d72 RTS
     .b72 ADC #dy:DEC cnt:BEQ e72
     .n72 TAX:DEY:BMI s82
+IF KCHACK
+    LDA scr:ADC #7:STA scr:SEC:JMP p02
+ELSE
     LDA scr:ADC #7:STA scr:BCS ac2
     SEC:JMP p02:.ac2 INC scr+1:JMP p02
+ENDIF
+IF KCHACK
+    .s82 LDY #7:LDA scr:ADC #7:STA scr:DEC scr+1:SEC:JMP p02
+ELSE
     .s82 LDY #7:LDA scr:SBC #LO(SCREEN_WIDTH-8):STA scr
     LDA scr+1:SBC #HI(SCREEN_WIDTH-8):STA scr+1:JMP p02
+ENDIF
     .p03 LDA #1:EOR(scr),Y:STA (scr),Y
     TXA:.a03 SBC #dx:BCC b03:TAX
     DEY:BPL p03
+IF KCHACK
+    .s03 DEC scr+1:LDY #7:SEC:BCS p03
+ELSE
     .s03 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p03:DEC scr+1:SEC:BCS p03
+ENDIF
     .e03 DEC ls:BEQ d03:SBC errs
     INC cnt:BCS n03:.d03 RTS
     .b03 ADC #dy:DEC cnt:BEQ e03
@@ -392,9 +513,13 @@ SCREEN_WIDTH=256
     .p13 LDA #2:EOR(scr),Y:STA (scr),Y
     TXA:.a13 SBC #dx:BCC b13:TAX
     DEY:BPL p13
+IF KCHACK
+    .s13 DEC scr+1:LDY #7:SEC:BCS p13
+ELSE
     .s13 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p13:DEC scr+1:SEC:BCS p13
+ENDIF
     .e13 DEC ls:BEQ d13:SBC errs
     INC cnt:BCS n13:.d13 RTS
     .b13 ADC #dy:DEC cnt:BEQ e13
@@ -402,9 +527,13 @@ SCREEN_WIDTH=256
     .p23 LDA #4:EOR(scr),Y:STA (scr),Y
     TXA:.a23 SBC #dx:BCC b23:TAX
     DEY:BPL p23
+IF KCHACK
+    .s23 DEC scr+1:LDY #7:SEC:BCS p23
+ELSE
     .s23 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p23:DEC scr+1:SEC:BCS p23
+ENDIF
     .e23 DEC ls:BEQ d23:SBC errs
     INC cnt:BCS n23:.d23 RTS
     .b23 ADC #dy:DEC cnt:BEQ e23
@@ -412,9 +541,13 @@ SCREEN_WIDTH=256
     .p33 LDA #8:EOR(scr),Y:STA (scr),Y
     TXA:.a33 SBC #dx:BCC b33:TAX
     DEY:BPL p33
+IF KCHACK
+    .s33 DEC scr+1:LDY #7:SEC:BCS p33
+ELSE
     .s33 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p33:DEC scr+1:SEC:BCS p33
+ENDIF
     .e33 DEC ls:BEQ d33:SBC errs
     INC cnt:BCS n33:.d33 RTS
     .b33 ADC #dy:DEC cnt:BEQ e33
@@ -422,9 +555,13 @@ SCREEN_WIDTH=256
     .p43 LDA #&10:EOR(scr),Y:STA (scr),Y
     TXA:.a43 SBC #dx:BCC b43:TAX
     DEY:BPL p43
+IF KCHACK
+    .s43 DEC scr+1:LDY #7:SEC:BCS p43
+ELSE
     .s43 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p43:DEC scr+1:SEC:BCS p43
+ENDIF
     .e43 DEC ls:BEQ d43:SBC errs
     INC cnt:BCS n43:.d43 RTS
     .b43 ADC #dy:DEC cnt:BEQ e43
@@ -432,9 +569,13 @@ SCREEN_WIDTH=256
     .p53 LDA #&20:EOR(scr),Y:STA (scr),Y
     TXA:.a53 SBC #dx:BCC b53:TAX
     DEY:BPL p53
+IF KCHACK
+    .s53 DEC scr+1:LDY #7:SEC:BCS p53
+ELSE
     .s53 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p53:DEC scr+1:SEC:BCS p53
+ENDIF
     .e53 DEC ls:BEQ d53:SBC errs
     INC cnt:BCS n53:.d53 RTS
     .b53 ADC #dy:DEC cnt:BEQ e53
@@ -442,9 +583,13 @@ SCREEN_WIDTH=256
     .p63 LDA #&40:EOR(scr),Y:STA (scr),Y
     TXA:.a63 SBC #dx:BCC b63:TAX
     DEY:BPL p63
+IF KCHACK
+    .s63 DEC scr+1:LDY #7:SEC:BCS p63
+ELSE
     .s63 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p63:DEC scr+1:SEC:BCS p63
+ENDIF
     .e63 DEC ls:BEQ d63:SBC errs
     INC cnt:BCS n63:.d63 RTS
     .b63 ADC #dy:DEC cnt:BEQ e63
@@ -452,18 +597,30 @@ SCREEN_WIDTH=256
     .p73 LDA #&80:EOR(scr),Y:STA (scr),Y
     TXA:.a73 SBC #dx:BCC b73:TAX
     DEY:BPL p73
+IF KCHACK
+    .s73 DEC scr+1:LDY #7:SEC:BCS p73
+ELSE
     .s73 LDY #7:DEC scr+1:LDA scr
 	SBC #LO(SCREEN_WIDTH)
     STA scr:BCS p73:DEC scr+1:SEC:BCS p73
+ENDIF
     .e73 DEC ls:BEQ d73:SBC errs
     INC cnt:BCS n73:.d73 RTS
     .b73 ADC #dy:DEC cnt:BEQ e73
     .n73 TAX:DEY:BMI s83
+IF KCHACK
+    LDA scr:SBC #8:STA scr:SEC:JMP p03
+ELSE
     LDA scr:SBC #8:STA scr:BCC ac3
     JMP p03:.ac3 DEC scr+1:SEC:JMP p03
+ENDIF
+IF KCHACK
+    .s83 LDY #7:LDA scr:SBC #8:STA scr:DEC scr+1:SEC:JMP p03
+ELSE
     .s83 LDY #7:LDA scr:SBC #LO(SCREEN_WIDTH+8):STA scr
     LDA scr+1:SBC #HI(SCREEN_WIDTH+8):STA scr+1
     JMP p03
+ENDIF
 
 
     .strt0
